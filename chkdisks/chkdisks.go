@@ -4,6 +4,7 @@ package main
 
 import (
 	"bufio"
+	"flag"
 	"fmt"
 	"os"
 	"strconv"
@@ -18,6 +19,9 @@ func main() {
 	checkErr(err)
 
 	defer file.Close()
+
+	debug := flag.Bool("debug", false, "debug enabled")
+	flag.Parse()
 
 	scanner := bufio.NewScanner(file)
 	filesystems := []string{}
@@ -74,6 +78,10 @@ func main() {
 				body += m + "\n"
 				body += strconv.FormatFloat(percentUsed, 'f', 2, 64) + "\n"
 				postAlert(channel, subject, body, token)
+			}
+
+			if *debug {
+				fmt.Println(host, m, percentUsed)
 			}
 
 			body = ""

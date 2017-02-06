@@ -2,6 +2,7 @@ package main
 
 import (
 	"bufio"
+	"flag"
 	"fmt"
 	"os"
 	"strconv"
@@ -20,6 +21,9 @@ func main() {
 		size := 0.0
 		used := 0.0
 		percentUsed := 0.0
+
+		debug := flag.Bool("debug", false, "debug enabled")
+		flag.Parse()
 
 		file, err := os.Open("/proc/swaps")
 		checkErr(err)
@@ -41,6 +45,9 @@ func main() {
 
 		if percentUsed > 10.00 {
 			postAlert(channel, subject, body, token)
+		}
+		if *debug {
+			fmt.Println(host, percentUsed)
 		}
 	} else {
 		fmt.Println("SLACK_TOKEN is not set! Set SLACK_TOKEN before running again.")

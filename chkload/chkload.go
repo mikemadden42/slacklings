@@ -2,6 +2,7 @@ package main
 
 import (
 	"bufio"
+	"flag"
 	"fmt"
 	"os"
 	"runtime"
@@ -20,6 +21,9 @@ func main() {
 		body := ""
 		load := ""
 
+		debug := flag.Bool("debug", false, "debug enabled")
+		flag.Parse()
+
 		file, err := os.Open("/proc/loadavg")
 		checkErr(err)
 
@@ -35,6 +39,9 @@ func main() {
 		currentLoad, _ := strconv.ParseFloat(load, 64)
 		if currentLoad > float64(runtime.NumCPU()) {
 			postAlert(channel, subject, body, token)
+		}
+		if *debug {
+			fmt.Println(host, load)
 		}
 	} else {
 		fmt.Println("SLACK_TOKEN is not set! Set SLACK_TOKEN before running again.")

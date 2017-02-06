@@ -5,6 +5,7 @@ package main
 // http://stackoverflow.com/questions/14230145/what-is-the-best-way-to-convert-byte-array-to-string
 
 import (
+	"flag"
 	"fmt"
 	"io/ioutil"
 	"log"
@@ -21,6 +22,9 @@ func main() {
 	if err != nil {
 		log.Fatal(err)
 	}
+
+	debug := flag.Bool("debug", false, "debug enabled")
+	flag.Parse()
 
 	var processes map[string]int
 	processes = make(map[string]int)
@@ -46,11 +50,14 @@ func main() {
 		body := ""
 
 		for key, value := range processes {
-			if value >= 40 {
-				user, _ := user.LookupId(key)
+			user, _ := user.LookupId(key)
+			if value >= 50 {
 				body += "user " + user.Username + " -> " + strconv.Itoa(value) + " processes\n"
 				postAlert(channel, subject, body, token)
 				body = ""
+			}
+			if *debug {
+				fmt.Println(host, user.Username, value)
 			}
 		}
 	} else {
