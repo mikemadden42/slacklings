@@ -41,6 +41,7 @@ func main() {
 			postAlert(channel, subject, body, token)
 		}
 		if *debug {
+			fmt.Println("load threshold: ", runtime.NumCPU())
 			fmt.Println(host, load)
 		}
 	} else {

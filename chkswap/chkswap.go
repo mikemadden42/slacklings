@@ -21,6 +21,7 @@ func main() {
 		size := 0.0
 		used := 0.0
 		percentUsed := 0.0
+		const threshold = 10.00
 
 		debug := flag.Bool("debug", false, "debug enabled")
 		flag.Parse()
@@ -43,10 +44,11 @@ func main() {
 			body += words[3] + "\n"
 		}
 
-		if percentUsed > 10.00 {
+		if percentUsed > threshold {
 			postAlert(channel, subject, body, token)
 		}
 		if *debug {
+			fmt.Println("swap threshold: ", threshold)
 			fmt.Println(host, percentUsed)
 		}
 	} else {

@@ -48,10 +48,15 @@ func main() {
 		channel := "#build_status"
 		subject := "High process count on " + host
 		body := ""
+		const threshold = 50
+
+		if *debug {
+			fmt.Println("process threshold: ", threshold)
+		}
 
 		for key, value := range processes {
 			user, _ := user.LookupId(key)
-			if value >= 50 {
+			if value >= threshold {
 				body += "user " + user.Username + " -> " + strconv.Itoa(value) + " processes\n"
 				postAlert(channel, subject, body, token)
 				body = ""

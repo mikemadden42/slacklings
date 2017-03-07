@@ -61,6 +61,11 @@ func main() {
 		channel := "#build_status"
 		subject := "High disk utilization on " + host
 		body := ""
+		const threshold = 0.90
+
+		if *debug {
+			fmt.Println("disk threshold: ", threshold)
+		}
 
 		for _, m := range mounts {
 			if m == "/var/cache/ccache" {
@@ -74,7 +79,7 @@ func main() {
 			total := stat.Blocks * uint64(stat.Bsize)
 			percentUsed := (float64(total-free) / float64(total))
 
-			if percentUsed > 0.90 {
+			if percentUsed > threshold {
 				body += m + "\n"
 				body += strconv.FormatFloat(percentUsed, 'f', 2, 64) + "\n"
 				postAlert(channel, subject, body, token)
