@@ -15,44 +15,11 @@ import (
 )
 
 func main() {
-	file, err := os.Open("/proc/filesystems")
-	checkErr(err)
-
-	defer file.Close()
-
 	debug := flag.Bool("debug", false, "debug enabled")
 	flag.Parse()
 
-	scanner := bufio.NewScanner(file)
-	filesystems := []string{}
-	for scanner.Scan() {
-		line := scanner.Text()
-		if strings.HasPrefix(line, "nodev") {
-			continue
-		} else {
-			fs := strings.TrimSpace(line)
-			filesystems = append(filesystems, fs)
-		}
-	}
-
-	mtab, err := os.Open("/etc/mtab")
-	checkErr(err)
-
-	defer mtab.Close()
-
-	scanner = bufio.NewScanner(mtab)
-	mounts := []string{}
-	for scanner.Scan() {
-		line := scanner.Text()
-		fields := strings.Fields(line)
-		mount := fields[1]
-		filesys := fields[2]
-		for _, i := range filesystems {
-			if i == filesys {
-				mounts = append(mounts, mount)
-			}
-		}
-	}
+	fs := filesystems()
+	ms := mounts(fs)
 
 	token := os.Getenv("SLACK_TOKEN")
 	if token != "" {
@@ -67,11 +34,7 @@ func main() {
 			fmt.Println("disk threshold: ", threshold)
 		}
 
-		for _, m := range mounts {
-			if m == "/var/cache/ccache" {
-				continue
-			}
-
+		for _, m := range ms {
 			err := syscall.Statfs(m, &stat)
 			checkErr(err)
 
@@ -111,4 +74,48 @@ func postAlert(channel string, subject string, body string, token string) {
 	channelID, timestamp, err := api.PostMessage(channel, subject, params)
 	checkErr(err)
 	fmt.Printf("Message successfully sent to channel %s at %s\n", channelID, timestamp)
+}
+
+func filesystems() []string {
+	file, err := os.Open("/proc/filesystems")
+	checkErr(err)
+
+	defer file.Close()
+
+	scanner := bufio.NewScanner(file)
+	filesystems := []string{}
+	for scanner.Scan() {
+		line := scanner.Text()
+		if strings.HasPrefix(line, "nodev") {
+			continue
+		} else {
+			fs := strings.TrimSpace(line)
+			filesystems = append(filesystems, fs)
+		}
+	}
+
+	return filesystems
+}
+
+func mounts(fs []string) []string {
+	mtab, err := os.Open("/etc/mtab")
+	checkErr(err)
+
+	defer mtab.Close()
+
+	scanner := bufio.NewScanner(mtab)
+	mounts := []string{}
+	for scanner.Scan() {
+		line := scanner.Text()
+		fields := strings.Fields(line)
+		mount := fields[1]
+		filesys := fields[2]
+		for _, i := range fs {
+			if i == filesys {
+				mounts = append(mounts, mount)
+			}
+		}
+	}
+
+	return mounts
 }
