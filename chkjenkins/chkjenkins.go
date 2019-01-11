@@ -7,7 +7,7 @@ import (
 	"os"
 
 	"github.com/urfave/cli"
-	"github.com/yosida95/golang-jenkins"
+	gojenkins "github.com/yosida95/golang-jenkins"
 )
 
 type jsonObject struct {
